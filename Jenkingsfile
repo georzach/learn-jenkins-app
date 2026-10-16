@@ -17,15 +17,23 @@ pipeline {
                     npm ci
                     npm run build
                     ls -la
-                    npm test
                 '''
             }
         }
 
         stage('Test') {
-            steps{
-                echo 'Test Stage'
-                npm test
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+
+            steps {
+                sh '''
+                    test -f build/index.html       # check if the file build/index.html exists
+                    npm test                       # run the tests
+                '''
             }
         }
     }
