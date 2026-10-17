@@ -45,14 +45,20 @@ pipeline {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
+                    //args '-u root:root'   -->  the serve -s build (see bellow) requires admin's rights. 
+                    // Not a good idea, produces issues to Jenkins to administer the files in the workspace
+                    // A better idea is to install serve not as global dependency but localy:
+                    // So insteed of using 'npm install -g serve' we will use 'npm install serve'.
+                    // and then we will use serve by calling it from the folder it is installed: modules/.bin/serve (see bellow)
+
                 }
             }
 
             steps {
                 sh '''
                     npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
+                    node_modules/.bin/serve -s build &  // the & starts this command in the background, and do not block the eccequsion of the rest commands
+                    sleep 10                            // wait for the serve to run
                     npx playwright test
                 '''
             }
